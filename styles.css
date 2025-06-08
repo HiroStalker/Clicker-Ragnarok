@@ -1,0 +1,88 @@
+/* General */
+body {
+  font-family: Arial, sans-serif;
+  background-color: #f4f4f4;
+  margin: 0;
+  padding: 0;
+}
+
+.game-container {
+  max-width: 1200px;
+  margin: 20px auto;
+  padding: 20px;
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+h1 {
+  text-align: center;
+  color: #333;
+}
+
+/* Layout */
+.layout-container {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 20px;
+}
+
+.left-panel {
+  background: #f9f9f9;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  padding: 15px;
+}
+
+.right-panel {
+  background: #f9f9f9;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  padding: 15px;
+}
+
+/* Botones */
+button {
+  display: block;
+  width: 100%;
+  margin: 10px 0;
+  padding: 10px;
+  font-size: 16px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #0056b3;
+}
+
+/* Botón seleccionado */
+button.selected {
+  background-color: #0056b3; /* Azul más llamativo */
+  color: white;
+  font-weight: bold;
+  border: 2px solid #003f7f; /* Borde más oscuro */
+}
+
+/* Información del jugador */
+#playerInfo p {
+  margin: 5px 0;
+}
+
+/* Pantallas de contenido */
+.content-screen {
+  display: none;
+}
+
+.content-screen.active {
+  display: block;
+}
+
+#asciiArt {
+  font-family: monospace;
+  text-align: center;
+  margin-bottom: 10px;
+}

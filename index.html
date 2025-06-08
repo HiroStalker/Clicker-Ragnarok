@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ragnarok RPG Incremental</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="game-container">
+    <h1>Ragnarok RPG Incremental</h1>
+
+    <div class="layout-container">
+      <!-- Panel Izquierdo -->
+      <div class="left-panel">
+        <!-- Menú Principal -->
+        <div id="mainMenu">
+          <button id="fightButton">Luchar</button>
+          <button id="farmButton">Farmear Zeny</button>
+          <button id="craftButton">Crear Equipo</button>
+        </div>
+
+        <!-- Información del Jugador -->
+        <div id="playerInfo">
+          <h2>Información del Jugador</h2>
+          <p>Clase: <span id="playerClass">Novice</span></p>
+          <p>Base Level: <span id="baseLevel">1</span></p>
+          <p>Job Level: <span id="jobLevel">1</span></p>
+          <p>Experiencia Base: <span id="baseXp">0</span> / <span id="baseXpNeeded">10</span></p>
+          <p>Experiencia de Job: <span id="jobXp">0</span> / <span id="jobXpNeeded">10</span></p>
+          <p>Salud: <span id="health">100</span></p>
+          <p>Daño: <span id="damage">5</span></p>
+          <p>Defensa: <span id="defense">0</span></p>
+          <p>Zeny: <span id="zeny">0</span></p>
+        </div>
+      </div>
+
+      <!-- Panel Derecho -->
+      <div class="right-panel">
+        <!-- Combate -->
+        <div id="combatScreen" class="content-screen active">
+          <h2>Combate</h2>
+          <pre id="asciiArt"></pre>
+          <p>Enemigo: <span id="enemyName">Poring</span></p>
+          <p>Salud del Enemigo: <span id="enemyHealth">20</span></p>
+          <button id="attackButton">Atacar</button>
+        </div>
+
+        <!-- Farmeo -->
+        <div id="farmingScreen" class="content-screen">
+          <h2>Farmeo</h2>
+          <p>Recolectando Zeny...</p>
+          <button id="gatherZenyButton">Recolectar Zeny</button>
+        </div>
+
+        <!-- Creación de Equipo -->
+        <div id="craftingScreen" class="content-screen">
+          <h2>Creación de Equipo</h2>
+          <p>Crea nuevo equipo:</p>
+          <button id="craftWeaponButton">Crear Arma (Costo: 50 Zeny)</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="script.js"></script>
+</body>
+</html>
