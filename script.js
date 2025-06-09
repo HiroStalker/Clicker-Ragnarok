@@ -21,29 +21,22 @@ let enemyName = "Poring";
 let enemyHealth = 20;
 let enemyDamage = 3;
 
-// Arte ASCII basado en Ragnarok Online
-const asciiArt = {
-  player: `
-     O
-    /|\\
-    / \\
-  `,
-  poring: `
-    (^_^)
-   ( o o )
-    \\___/
-  `,
-  lunatic: `
-    (O.o)
-   ( > < )
-    -----
-  `,
-  fabre: `
-    ^^^^^
-   ( o o )
-    -----
-  `,
-};
+
+
+// Localizaciones y monstruos
+const locations = [
+  {
+    name: "Geffen Field",
+    minLevel: 1,
+    monsters: [
+      { name: "Lunatic", health: 30, damage: 5 },
+      { name: "Chonchon", health: 25, damage: 4 },
+      { name: "Mandragora", health: 28, damage: 6 },
+      { name: "Creamy", health: 35, damage: 7 },
+    ],
+  },
+  // Puedes añadir más localizaciones aquí
+];
 
 // Elementos del DOM (actualizados)
 const playerClassDisplay = document.getElementById("playerClass");
@@ -52,7 +45,6 @@ const damageDisplay = document.getElementById("damage");
 const defenseDisplay = document.getElementById("defense");
 const zenyDisplay = document.getElementById("zeny");
 
-const asciiArtDisplay = document.getElementById("asciiArt");
 const enemyNameDisplay = document.getElementById("enemyName");
 const enemyHealthDisplay = document.getElementById("enemyHealth");
 
@@ -71,34 +63,62 @@ const craftButton = document.getElementById("craftButton");
 const combatScreen = document.getElementById("combatScreen");
 const farmingScreen = document.getElementById("farmingScreen");
 const craftingScreen = document.getElementById("craftingScreen");
+const locationScreen = document.getElementById("locationScreen");
+const mainMenu = document.getElementById("mainMenu");
 
-// Mostrar la pantalla correspondiente
+const enemyImageContainer = document.getElementById("enemyImageContainer");
+
+// Función genérica para mostrar pantallas
 function showScreen(screen, button) {
   // Ocultar todas las pantallas
-  document.querySelectorAll(".content-screen").forEach(s => s.classList.remove("active"));
+  document.querySelectorAll(".content-screen").forEach(s => s.style.display = "none");
 
   // Mostrar la pantalla seleccionada
-  screen.classList.add("active");
+  screen.style.display = "block";
 
   // Quitar la clase 'selected' de todos los botones
   document.querySelectorAll("#mainMenu button").forEach(btn => btn.classList.remove("selected"));
 
   // Añadir la clase 'selected' al botón clicado
-  button.classList.add("selected");
+  if (button) button.classList.add("selected");
 }
 
 // Eventos para los botones del menú
 fightButton.addEventListener("click", () => {
-  showScreen(combatScreen, fightButton);
+  showScreen(locationScreen, fightButton);
+  renderLocationMenu();
 });
-
 farmButton.addEventListener("click", () => {
   showScreen(farmingScreen, farmButton);
 });
-
 craftButton.addEventListener("click", () => {
   showScreen(craftingScreen, craftButton);
 });
+
+// Renderizar menú de localizaciones
+function renderLocationMenu() {
+  locationScreen.innerHTML = "<strong>Elige una localización:</strong><br>";
+  const availableLocations = locations.filter(loc => level >= loc.minLevel);
+  availableLocations.forEach(loc => {
+    const btn = document.createElement("button");
+    btn.textContent = loc.name;
+    btn.onclick = () => {
+      selectLocation(loc);
+      showScreen(combatScreen, fightButton);
+    };
+    locationScreen.appendChild(btn);
+    locationScreen.appendChild(document.createTextNode(" "));
+  });
+}
+
+// Seleccionar localización y generar monstruo
+function selectLocation(location) {
+  const monster = location.monsters[Math.floor(Math.random() * location.monsters.length)];
+  enemyName = monster.name;
+  enemyHealth = monster.health + level * 5;
+  enemyDamage = monster.damage + level;
+  updateUI();
+}
 
 // Función para actualizar la interfaz
 function updateUI() {
@@ -110,6 +130,15 @@ function updateUI() {
 
   enemyNameDisplay.textContent = enemyName;
   enemyHealthDisplay.textContent = enemyHealth;
+
+  // Mostrar gif solo si el enemigo es Lunatic
+  if (enemyImageContainer) {
+    if (enemyName === "Lunatic") {
+      enemyImageContainer.innerHTML = `<img src="https://rune-nifelheim.com/db/mob/img/1591.gif" alt="Lunatic" style="height:64px;">`;
+    } else {
+      enemyImageContainer.innerHTML = "";
+    }
+  }
 
   updatePlayerInfo();
 }
@@ -126,62 +155,36 @@ function updatePlayerInfo() {
 
 // Mostrar menú principal
 function showMainMenu() {
-  mainMenu.style.display = "block";
-  combatScreen.style.display = "none";
-  farmingScreen.style.display = "none";
-  craftingScreen.style.display = "none";
-}
-
-// Mostrar pantalla de combate
-function showCombatScreen() {
-  
-  combatScreen.style.display = "block";
-  farmingScreen.style.display = "none";
-  craftingScreen.style.display = "none";
-
-  asciiArtDisplay.textContent = asciiArt[enemyName.toLowerCase()] || asciiArt.poring;
-}
-
-// Mostrar pantalla de farmeo
-function showFarmingScreen() {
-  
-  combatScreen.style.display = "none";
-  farmingScreen.style.display = "block";
-  craftingScreen.style.display = "none";
-}
-
-// Mostrar pantalla de creación
-function showCraftingScreen() {
-  
-  combatScreen.style.display = "none";
-  farmingScreen.style.display = "none";
-  craftingScreen.style.display = "block";
+  showScreen(mainMenu, null);
 }
 
 // Ataque al enemigo
-attackButton.addEventListener("click", () => {
-  if (enemyHealth > 0) {
-    // Reducir la salud del enemigo
-    enemyHealth -= damage;
-    enemyHealthDisplay.textContent = Math.max(enemyHealth, 0);
+const attackButton = document.getElementById("attackButton");
+if (attackButton) {
+  attackButton.addEventListener("click", () => {
+    if (enemyHealth > 0) {
+      // Reducir la salud del enemigo
+      enemyHealth -= damage;
+      enemyHealthDisplay.textContent = Math.max(enemyHealth, 0);
 
-    // Verificar si el enemigo ha sido derrotado
-    if (enemyHealth <= 0) {
-      enemyDefeated();
-    } else {
-      // Ataque del enemigo
-      health -= Math.max(enemyDamage - defense, 1); // Daño mínimo de 1
-      healthDisplay.textContent = Math.max(health, 0);
+      // Verificar si el enemigo ha sido derrotado
+      if (enemyHealth <= 0) {
+        enemyDefeated();
+      } else {
+        // Ataque del enemigo
+        health -= Math.max(enemyDamage - defense, 1); // Daño mínimo de 1
+        healthDisplay.textContent = Math.max(health, 0);
 
-      // Si el jugador muere
-      if (health <= 0) {
-        alert("¡Has muerto! Reiniciando...");
-        resetGame();
-        return;
+        // Si el jugador muere
+        if (health <= 0) {
+          alert("¡Has muerto! Reiniciando...");
+          resetGame();
+          return;
+        }
       }
     }
-  }
-});
+  });
+}
 
 // Función para manejar la derrota del enemigo
 function enemyDefeated() {
@@ -222,7 +225,7 @@ function gainExperience(baseXpGained, jobXpGained) {
   updatePlayerInfo();
 }
 
-// Generar un nuevo enemigo
+// Generar un nuevo enemigo (por defecto)
 function spawnEnemy() {
   const enemies = [
     { name: "Poring", health: 20 + level * 5, damage: 3 + level },
@@ -234,7 +237,6 @@ function spawnEnemy() {
   enemyHealth = randomEnemy.health;
   enemyDamage = randomEnemy.damage;
 
-  asciiArtDisplay.textContent = asciiArt[enemyName.toLowerCase()] || asciiArt.poring;
   updateUI();
 }
 
@@ -262,28 +264,36 @@ function resetToFirstJob() {
     "¡Felicidades! Has alcanzado el nivel 10 como Novice. Elige tu nueva clase:\n1. Espadachín\n2. Mago\n3. Arquero\n4. Acolito\n5. Mercader\n6. Ladrón"
   );
 
+  let stats = { healthBonus: 0, damageBonus: 0, defenseBonus: 0 };
   switch (jobSelection) {
     case "1":
-      changeClass("Espadachín", { healthBonus: 150, damageBonus: 10, defenseBonus: 20 });
+      stats = { healthBonus: 150, damageBonus: 10, defenseBonus: 20 };
+      changeClass("Espadachín", stats);
       break;
     case "2":
-      changeClass("Mago", { healthBonus: 100, damageBonus: 20, defenseBonus: 5 });
+      stats = { healthBonus: 100, damageBonus: 20, defenseBonus: 5 };
+      changeClass("Mago", stats);
       break;
     case "3":
-      changeClass("Arquero", { healthBonus: 120, damageBonus: 15, defenseBonus: 10 });
+      stats = { healthBonus: 120, damageBonus: 15, defenseBonus: 10 };
+      changeClass("Arquero", stats);
       break;
     case "4":
-      changeClass("Acolito", { healthBonus: 140, damageBonus: 5, defenseBonus: 15 });
+      stats = { healthBonus: 140, damageBonus: 5, defenseBonus: 15 };
+      changeClass("Acolito", stats);
       break;
     case "5":
-      changeClass("Mercader", { healthBonus: 130, damageBonus: 10, defenseBonus: 10 });
+      stats = { healthBonus: 130, damageBonus: 10, defenseBonus: 10 };
+      changeClass("Mercader", stats);
       break;
     case "6":
-      changeClass("Ladrón", { healthBonus: 110, damageBonus: 15, defenseBonus: 5 });
+      stats = { healthBonus: 110, damageBonus: 15, defenseBonus: 5 };
+      changeClass("Ladrón", stats);
       break;
     default:
       alert("Selección inválida. Seleccionando Espadachín por defecto.");
-      changeClass("Espadachín", { healthBonus: 150, damageBonus: 10, defenseBonus: 20 });
+      stats = { healthBonus: 150, damageBonus: 10, defenseBonus: 20 };
+      changeClass("Espadachín", stats);
   }
 
   level = 1;
@@ -305,22 +315,28 @@ function changeClass(newClass, newStats) {
 }
 
 // Recolectar Zeny
-gatherZenyButton.addEventListener("click", () => {
-  zeny += 1 + Math.floor(level / 2); // Más Zeny a mayor nivel
-  updateUI();
-});
+const gatherZenyButton = document.getElementById("gatherZenyButton");
+if (gatherZenyButton) {
+  gatherZenyButton.addEventListener("click", () => {
+    zeny += 1 + Math.floor(level / 2); // Más Zeny a mayor nivel
+    updateUI();
+  });
+}
 
 // Crear arma
-craftWeaponButton.addEventListener("click", () => {
-  if (zeny >= 50) {
-    zeny -= 50;
-    damage += 5; // Aumentar daño
-    alert("¡Arma creada! Tu daño ha aumentado.");
-    updateUI();
-  } else {
-    alert("No tienes suficiente Zeny para crear un arma.");
-  }
-});
+const craftWeaponButton = document.getElementById("craftWeaponButton");
+if (craftWeaponButton) {
+  craftWeaponButton.addEventListener("click", () => {
+    if (zeny >= 50) {
+      zeny -= 50;
+      damage += 5; // Aumentar daño
+      alert("¡Arma creada! Tu daño ha aumentado.");
+      updateUI();
+    } else {
+      alert("No tienes suficiente Zeny para crear un arma.");
+    }
+  });
+}
 
 // Reiniciar el juego
 function resetGame() {
@@ -398,6 +414,24 @@ spawnEnemy();
 showMainMenu();
 
 // Eventos del menú principal
-fightButton.addEventListener("click", showCombatScreen);
-farmButton.addEventListener("click", showFarmingScreen);
-craftButton.addEventListener("click", showCraftingScreen);
+fightButton.addEventListener("click", () => {
+  showScreen(locationScreen, fightButton);
+  renderLocationMenu();
+});
+farmButton.addEventListener("click", () => {
+  showScreen(farmingScreen, farmButton);
+});
+craftButton.addEventListener("click", () => {
+  showScreen(craftingScreen, craftButton);
+});
+
+const escapeButton = document.getElementById("escapeButton");
+if (escapeButton) {
+  escapeButton.addEventListener("click", () => {
+    // Reinicia el estado del enemigo
+    spawnEnemy();
+    updateUI();
+    // Vuelve al menú principal o a la pantalla de localizaciones
+    showMainMenu();
+  });
+}
