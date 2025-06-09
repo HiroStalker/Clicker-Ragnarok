@@ -13,30 +13,10 @@ let baseLevel = 1;
 let jobLevel = 1;
 let baseXp = 0;
 let jobXp = 0;
-let baseXpNeeded = 10;
+let baseXpNeeded = 9;
 let jobXpNeeded = 10;
 
-// Variables del enemigo
-let enemyName = "Poring";
-let enemyHealth = 20;
-let enemyDamage = 3;
-
-
-
-// Localizaciones y monstruos
-const locations = [
-  {
-    name: "Geffen Field",
-    minLevel: 1,
-    monsters: [
-      { name: "Lunatic", health: 30, damage: 5 },
-      { name: "Chonchon", health: 25, damage: 4 },
-      { name: "Mandragora", health: 28, damage: 6 },
-      { name: "Creamy", health: 35, damage: 7 },
-    ],
-  },
-  // Puedes añadir más localizaciones aquí
-];
+let currentMonster = null; 
 
 // Elementos del DOM (actualizados)
 const playerClassDisplay = document.getElementById("playerClass");
@@ -54,6 +34,7 @@ const baseXpDisplay = document.getElementById("baseXp");
 const baseXpNeededDisplay = document.getElementById("baseXpNeeded");
 const jobXpDisplay = document.getElementById("jobXp");
 const jobXpNeededDisplay = document.getElementById("jobXpNeeded");
+const availableLocations = locations.filter(loc => level >= loc.minLevel);
 
 // Elementos del DOM
 const fightButton = document.getElementById("fightButton");
@@ -114,6 +95,7 @@ function renderLocationMenu() {
 // Seleccionar localización y generar monstruo
 function selectLocation(location) {
   const monster = location.monsters[Math.floor(Math.random() * location.monsters.length)];
+  currentMonster = monster; // Guarda el monstruo actual
   enemyName = monster.name;
   enemyHealth = monster.health + level * 5;
   enemyDamage = monster.damage + level;
@@ -131,10 +113,10 @@ function updateUI() {
   enemyNameDisplay.textContent = enemyName;
   enemyHealthDisplay.textContent = enemyHealth;
 
-  // Mostrar gif solo si el enemigo es Lunatic
+  // Mostrar gif del monstruo si existe
   if (enemyImageContainer) {
-    if (enemyName === "Lunatic") {
-      enemyImageContainer.innerHTML = `<img src="https://rune-nifelheim.com/db/mob/img/1591.gif" alt="Lunatic" style="height:64px;">`;
+    if (currentMonster && currentMonster.img) {
+      enemyImageContainer.innerHTML = `<img src="${currentMonster.img}" alt="${enemyName}" style="height:64px;">`;
     } else {
       enemyImageContainer.innerHTML = "";
     }
@@ -193,10 +175,7 @@ function enemyDefeated() {
 
   // Ganar experiencia
   gainExperience(baseXpGained, jobXpGained);
-
-  // Ganar experiencia y Zeny
-  xp += 5; // Ganar experiencia
-  zeny += 10; // Ganar Zeny
+  zeny += 10; 
 
   // Reiniciar la salud del enemigo para el próximo combate
   spawnEnemy();
@@ -205,23 +184,28 @@ function enemyDefeated() {
 
 // Función para ganar experiencia
 function gainExperience(baseXpGained, jobXpGained) {
-  // Incrementar experiencia base
+  // Experiencia base
   baseXp += baseXpGained;
-  if (baseXp >= baseXpNeeded) {
+  baseXpNeeded = window.ExpIncr.base[baseLevel] || baseXpNeeded;
+  while (baseXp >= baseXpNeeded && baseLevel < 99) {
     baseXp -= baseXpNeeded;
     baseLevel++;
-    baseXpNeeded = Math.floor(baseXpNeeded * 1.5); // Incremento de dificultad
+    baseXpNeeded = window.ExpIncr.base[baseLevel] || baseXpNeeded;
+    health += 20;
+    damage += 2;
+    updateUI();
   }
 
-  // Incrementar experiencia de job
+  // Experiencia de job
   jobXp += jobXpGained;
-  if (jobXp >= jobXpNeeded) {
+  jobXpNeeded = window.ExpIncr.job[jobLevel] || jobXpNeeded;
+  while (jobXp >= jobXpNeeded && jobLevel < 99) {
     jobXp -= jobXpNeeded;
     jobLevel++;
-    jobXpNeeded = Math.floor(jobXpNeeded * 1.5); // Incremento de dificultad
+    jobXpNeeded = window.ExpIncr.job[jobLevel] || jobXpNeeded;
+    updateUI();
   }
 
-  // Actualizar la interfaz
   updatePlayerInfo();
 }
 
@@ -355,30 +339,33 @@ function resetGame() {
 
 // Persistencia: Guardar y cargar datos
 function saveGame() {
+  const safe = (val, def) => (typeof val === "number" && !isNaN(val) ? val : def);
+
   const gameState = {
-    level,
-    xp,
-    xpNeeded,
-    health,
-    damage,
-    defense,
-    zeny,
-    playerClass,
-    enemyName,
-    enemyHealth,
-    enemyDamage,
-    baseLevel,
-    jobLevel,
-    baseXp,
-    jobXp,
-    baseXpNeeded,
-    jobXpNeeded,
+    level: safe(level, 1),
+    xp: safe(xp, 0),
+    xpNeeded: safe(xpNeeded, 10),
+    health: safe(health, 100),
+    damage: safe(damage, 5),
+    defense: safe(defense, 0),
+    zeny: safe(zeny, 0),
+    playerClass: playerClass || "Novice",
+    enemyName: enemyName || "",
+    enemyHealth: safe(enemyHealth, 0),
+    enemyDamage: safe(enemyDamage, 0),
+    baseLevel: safe(baseLevel, 1),
+    jobLevel: safe(jobLevel, 1),
+    baseXp: safe(baseXp, 0),
+    jobXp: safe(jobXp, 0),
+    baseXpNeeded: safe(baseXpNeeded, 10),
+    jobXpNeeded: safe(jobXpNeeded, 10),
   };
   localStorage.setItem("ragnarokGameState", JSON.stringify(gameState));
 }
 
 function loadGame() {
   const savedState = localStorage.getItem("ragnarokGameState");
+  const gameState = JSON.parse(savedState);
   if (savedState) {
     const gameState = JSON.parse(savedState);
     level = gameState.level;
@@ -392,12 +379,12 @@ function loadGame() {
     enemyName = gameState.enemyName;
     enemyHealth = gameState.enemyHealth;
     enemyDamage = gameState.enemyDamage;
-    baseLevel = gameState.baseLevel;
+     baseLevel = gameState.baseLevel;
     jobLevel = gameState.jobLevel;
     baseXp = gameState.baseXp;
     jobXp = gameState.jobXp;
-    baseXpNeeded = gameState.baseXpNeeded;
-    jobXpNeeded = gameState.jobXpNeeded;
+    baseXpNeeded = window.ExpIncr.base[baseLevel] || 10;
+    jobXpNeeded = window.ExpIncr.job[jobLevel] || 10;
 
     updateUI();
   }
