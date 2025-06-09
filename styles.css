@@ -86,3 +86,40 @@ button.selected {
   text-align: center;
   margin-bottom: 10px;
 }
+
+/* Barras de enemigo */
+.enemy-bar {
+  margin: 10px 0;
+}
+
+.hp-bar-container {
+  position: relative;
+  margin: 5px 0 10px 0;
+}
+
+.hp-text {
+  position: absolute;
+  width: 100%;
+  text-align: center;
+  font-size: 14px;
+  color: #fff;
+  z-index: 2;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+}
+
+.hp-bar {
+  width: 100%;
+  background: #ccc;
+  border-radius: 5px;
+  overflow: hidden;
+  height: 22px;
+  position: relative;
+}
+
+#enemyHpBar {
+  background: linear-gradient(90deg, #ff4d4d, #ffb84d);
+  height: 100%;
+  transition: width 0.3s;
+}

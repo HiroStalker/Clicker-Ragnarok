@@ -8,7 +8,7 @@
 </head>
 <body>
   <div class="game-container">
-    <h1>Ragnarok RPG Incremental</h1>
+    <h1>Ragnarok-Clicker</h1>
 
     <div class="layout-container">
       <!-- Panel Izquierdo -->
@@ -40,10 +40,18 @@
         <!-- Combate -->
         <div id="combatScreen" class="content-screen active">
           <h2>Combate</h2>
-
-          <div id="enemyImageContainer"></div>
-          <p>Enemigo: <span id="enemyName">Poring</span></p>
-          <p>Salud del Enemigo: <span id="enemyHealth">20</span></p>
+          <div id="enemyImageContainer">
+            <img id="enemyImage" src="images/poring.png" alt="Poring" />
+          </div>
+          <div class="enemy-bar">
+            <span id="enemyName">Poring</span>
+            <div class="hp-bar-container">
+              <span id="enemyHealthText" class="hp-text">20 / 20 HP</span>
+              <div class="hp-bar">
+                <div id="enemyHpBar" style="width: 100%;"></div>
+              </div>
+            </div>
+          </div>
           <button id="attackButton">Atacar</button>
           <button id="escapeButton">Huir</button>
         </div>

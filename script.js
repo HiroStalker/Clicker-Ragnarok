@@ -48,6 +48,8 @@ const locationScreen = document.getElementById("locationScreen");
 const mainMenu = document.getElementById("mainMenu");
 
 const enemyImageContainer = document.getElementById("enemyImageContainer");
+const enemyHpBar = document.getElementById("enemyHpBar");
+const enemyHealthText = document.getElementById("enemyHealthText");
 
 // Función genérica para mostrar pantallas
 function showScreen(screen, button) {
@@ -99,7 +101,23 @@ function selectLocation(location) {
   enemyName = monster.name;
   enemyHealth = monster.health + level * 5;
   enemyDamage = monster.damage + level;
+  setEnemy(monster);
   updateUI();
+}
+
+// Cuando generes un nuevo monstruo:
+function setEnemy(monster) {
+  enemyHealth = monster.health;
+  enemyMaxHealth = monster.health;
+  updateEnemyUI();
+}
+
+function updateEnemyUI() {
+  // Actualiza la barra y el texto
+  const percent = Math.max(0, (enemyHealth / enemyMaxHealth) * 100);
+  enemyHpBar.style.width = percent + "%";
+  enemyHealthText.textContent = `${enemyHealth} / ${enemyMaxHealth} HP`;
+  enemyNameDisplay.textContent = enemyName;
 }
 
 // Función para actualizar la interfaz
@@ -109,9 +127,6 @@ function updateUI() {
   damageDisplay.textContent = damage;
   defenseDisplay.textContent = defense;
   zenyDisplay.textContent = zeny;
-
-  enemyNameDisplay.textContent = enemyName;
-  enemyHealthDisplay.textContent = enemyHealth;
 
   // Mostrar gif del monstruo si existe
   if (enemyImageContainer) {
@@ -146,8 +161,8 @@ if (attackButton) {
   attackButton.addEventListener("click", () => {
     if (enemyHealth > 0) {
       // Reducir la salud del enemigo
-      enemyHealth -= damage;
-      enemyHealthDisplay.textContent = Math.max(enemyHealth, 0);
+      enemyHealth = Math.max(0, enemyHealth - damage);
+      updateEnemyUI();
 
       // Verificar si el enemigo ha sido derrotado
       if (enemyHealth <= 0) {
@@ -179,7 +194,7 @@ function enemyDefeated() {
 
   // Reiniciar la salud del enemigo para el próximo combate
   spawnEnemy();
-  checkLevelUp();
+  
 }
 
 // Función para ganar experiencia
@@ -193,6 +208,11 @@ function gainExperience(baseXpGained, jobXpGained) {
     baseXpNeeded = window.ExpIncr.base[baseLevel] || baseXpNeeded;
     health += 20;
     damage += 2;
+
+    if (baseLevel >= 10 && jobLevel >= 10 && playerClass === "Novice") {
+      resetToFirstJob();
+      return;
+    }
     updateUI();
   }
 
@@ -221,26 +241,10 @@ function spawnEnemy() {
   enemyHealth = randomEnemy.health;
   enemyDamage = randomEnemy.damage;
 
-  updateUI();
+  setEnemy(randomEnemy);
 }
 
-// Subir de nivel
-function checkLevelUp() {
-  if (xp >= xpNeeded) {
-    level++;
-    xp = 0;
-    xpNeeded = Math.ceil(xpNeeded * 1.5); // Aumentar experiencia necesaria
 
-    if (level === 11 && playerClass === "Novice") {
-      resetToFirstJob();
-      return;
-    }
-
-    health += 20; // Aumentar salud
-    damage += 2; // Aumentar daño
-    updateUI();
-  }
-}
 
 // Cambiar a la primera clase
 function resetToFirstJob() {
@@ -400,17 +404,7 @@ loadGame();
 spawnEnemy();
 showMainMenu();
 
-// Eventos del menú principal
-fightButton.addEventListener("click", () => {
-  showScreen(locationScreen, fightButton);
-  renderLocationMenu();
-});
-farmButton.addEventListener("click", () => {
-  showScreen(farmingScreen, farmButton);
-});
-craftButton.addEventListener("click", () => {
-  showScreen(craftingScreen, craftButton);
-});
+
 
 const escapeButton = document.getElementById("escapeButton");
 if (escapeButton) {
